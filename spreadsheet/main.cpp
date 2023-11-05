@@ -1,3 +1,4 @@
+#include <limits>
 #include "common.h"
 #include "formula.h"
 #include "test_runner_p.h"
@@ -24,9 +25,6 @@ inline std::ostream& operator<<(std::ostream& output, const CellInterface::Value
 }
 
 namespace {
-std::string ToString(FormulaError::Category category) {
-    return std::string(FormulaError(category).ToString());
-}
 
 void TestPositionAndStringConversion() {
     auto testSingle = [](Position pos, std::string_view str) {
@@ -250,7 +248,7 @@ void TestErrorDiv0() {
 void TestEmptyCellTreatedAsZero() {
     auto sheet = CreateSheet();
     sheet->SetCell("A1"_pos, "=B2");
-    ASSERT_EQUAL(sheet->GetCell("A1"_pos)->GetValue(), CellInterface::Value(0));
+    ASSERT_EQUAL(sheet->GetCell("A1"_pos)->GetValue(), CellInterface::Value(0.0));
 }
 
 void TestFormulaInvalidPosition() {
@@ -307,7 +305,7 @@ void TestCellReferences() {
     sheet->SetCell("A2"_pos, "");
     ASSERT(sheet->GetCell("A1"_pos)->GetReferencedCells().empty());
     ASSERT(sheet->GetCell("A2"_pos)->GetReferencedCells().empty());
-
+    
     // Ссылка на ячейку за пределами таблицы
     sheet->SetCell("B1"_pos, "=C3");
     ASSERT_EQUAL(sheet->GetCell("B1"_pos)->GetReferencedCells(), std::vector{"C3"_pos});
@@ -343,7 +341,7 @@ void TestCellCircularReferences() {
     } catch (const CircularDependencyException&) {
         caught = true;
     }
-
+    
     ASSERT(caught);
     ASSERT_EQUAL(sheet->GetCell("M6"_pos)->GetText(), "Ready");
 }
@@ -370,4 +368,5 @@ int main() {
     RUN_TEST(tr, TestCellReferences);
     RUN_TEST(tr, TestFormulaIncorrect);
     RUN_TEST(tr, TestCellCircularReferences);
+    return 0;
 }
